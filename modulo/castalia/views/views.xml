@@ -1,0 +1,82 @@
+<odoo>
+  <data>
+
+    <record id="pagina_notas_credito" model="ir.ui.view">
+      <field name="name">notas</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='payment_term_id']" position="after">
+          <field name="lines_product" invisible="0"/>
+          <field name="limite_superado"/>
+        </xpath>
+        <xpath expr="//page[2]" position="after">
+          <page string="Agregar nota">
+            <group string="Acerca de tus notas de credito">
+              <field name="disponibles"/>
+              <field name="suma_montos" widget="monetary"/>
+            </group>
+            <field name="tabla_notas" mode="tree,kanban" nolabel="1">
+              <tree editable="bottom">
+                <field name="nombre"  widget="selection" domain="[('type', '=', 'out_refund'),('state', '=', 'open'),('partner_id','=', parent.partner_id)]
+                "/>
+                <field name="cliente"/>
+                <field name="monto"/>
+              </tree>
+            </field>
+            <group class="oe_subtotal_footer oe_right" colspan="2">
+              <label for="total"/>
+              <field name="total" nolabel="1" widget="monetary"/>
+            </group>
+          </page>
+        </xpath>
+        <!--***********************************PENDIENTE****************************************************-->
+        <data>
+          <xpath expr="//field[@name='tabla_notas']" position="attributes">
+            <attribute name="attrs">{'readonly': [('limite_superado', '=', True)]}</attribute>
+          </xpath>
+        </data>
+        <!--***********************************PENDIENTE****************************************************-->
+      </field>
+    </record>
+    <!---->
+    <record id="account_invoice_ref" model="ir.ui.view">
+      <field name="name">Rectificativas</field>
+      <field name="model">account.invoice</field>
+      <field name="inherit_id" ref="account.invoice_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='team_id']" position="after">
+          <field name="rectificativas"></field>
+        </xpath>
+        <xpath expr="//field[@name='amount_untaxed']" position="after">
+          <field name="credito_cliente" attrs="{'invisible': [('rectificativas', '=', 0)]}"/>
+        </xpath>
+      </field>
+    </record>
+    
+    <!--VALIDAMOS, SI NO SE HA AGREGADO UNA LINEA DE PRODUCTO A LA VENTA, NO SE PODRA AGREGAR UNA NOTA DE CREDITO-->
+    <record id="readonly_sale" model="ir.ui.view">
+      <field name="name">readonly.sale</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"></field>
+      <field name="arch" type="xml">
+        <data>
+          <xpath expr="//field[@name='tabla_notas']" position="attributes">
+            <attribute name="attrs">{'readonly': [('lines_product', '=', 0)]}</attribute>
+          </xpath>
+        </data>
+      </field>
+    </record>
+
+    <record id="product_template_recctificativa" model="ir.ui.view">
+      <field name="name">rectificativa.product</field>
+      <field name="model">product.template</field>
+      <field name="inherit_id" ref="product.product_template_only_form_view"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='barcode']" position="after">
+          <field name="rectificativa_adeudada" string="Tipo rectificativa"/>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
